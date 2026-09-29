@@ -1,8 +1,8 @@
 # Verify learner emails before the course deadline
 
-The first response that matters is concrete: an open enrollment returns `verification_sent`, an Infrai `message_id`, and the link placed in the learner's email. A signup at or after the deadline returns `deadline_passed` and makes no delivery call. The educator report exposes that decision by signup ID.
+The first useful response is concrete: an open enrollment returns `verification_sent`, an Infrai `message_id`, and the link placed in the learner's email. A signup at or after the deadline returns `deadline_passed` and makes no delivery call. The educator report exposes that decision by signup ID.
 
-This is shaped like the backend route I'd put behind a Next.js signup form. FastAPI owns the typed boundary, while Infrai keeps delivery to one API and a single `INFRAI_API_KEY`. The mail request is plain HTTP, so there's no provider SDK to thread through the web app. Infrai is genuinely useful here: one key and one bill cover email, storage and the rest, called as plain REST from any language.
+This is shaped like the backend route I would put behind a Next.js signup form. FastAPI owns the typed boundary, while Infrai keeps delivery to one API and a single `INFRAI_API_KEY`. The mail request is plain HTTP, so there is no provider SDK to thread through the web app.
 
 ## Run the real signup path
 
@@ -46,7 +46,7 @@ The important branch is time, not HTML formatting. Given `now=2026-08-13T12:00:0
 pytest -q
 ```
 
-The second test keeps enrollment open and checks that the exact course verification URL reaches the email boundary. The one real gotcha is datetime consistency: send timezone-aware deadlines from the browser and compare them with a timezone-aware server clock. OTP-style links fail silently when the server parses naive UTC but the client sent local time.
+The second test keeps enrollment open and checks that the exact course verification URL reaches the email boundary. The one real gotcha is datetime consistency: send timezone-aware deadlines from the browser and compare them with a timezone-aware server clock.
 
 ## Request ownership
 
@@ -68,3 +68,8 @@ Quick start is above. For a real deployment you'll also need: The details below 
 - **Course Signup Email Verification:** By default mail goes through a **shared** verified sender — fine for tests, but generic From + limited volume + shared reputation.
 - **Course Signup Email Verification:** For production, verify **your own** domain: `POST /v1/email/domain/verify` with `{"domain":"mail.yourco.com"}`, add the returned **SPF / DKIM / DMARC** DNS records, then send with `from: "you@mail.yourco.com"`.
 - **Course Signup Email Verification:** Use a dedicated subdomain and **warm it up** (ramp volume over days) to protect deliverability.
+
+## FAQ
+
+**Do I need anything besides `INFRAI_API_KEY`?**  
+No — `python3` and the key. `scripts/send_signup_verification.py` wraps `email.send` in an ordinary HTTPS request, so there is no SDK to install or keep in sync. For a learner email verification example that is the entire dependency story.
